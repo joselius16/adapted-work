@@ -1,0 +1,23 @@
+from typing import Optional
+
+from pydantic import Field
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    log_path: str = Field("logs/webscraping.log", env="LOG_PATH")
+    database_uri: str = Field(..., env="DATABASE_URI")
+
+    # Andalucia
+    base_url_andalucia: str = Field(
+        "https://www.juntadeandalucia.es/organismos/iaap/areas/empleo-publico/procesos-selectivos/detalle/",
+        env="BASE_URL_ANDALUCIA",
+    )
+    start_id_andalucia: int = Field(514000, env="START_ID_ANDALUCIA")
+    end_id_andalucia: int = Field(514050, env="END_ID_ANDALUCIA")
+
+    class Config:
+        env_file = ".env"
+
+
+settings = Settings()
