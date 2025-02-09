@@ -1,7 +1,10 @@
 import pytest
-from sqlmodel import SQLModel, Session, create_engine
+from sqlmodel import Session, SQLModel, create_engine
 from testcontainers.postgres import PostgresContainer
-from adapted_work.database.tables import Andalucia  # Asegúrate de que la importación es correcta
+
+from adapted_work.database.tables import \
+    Andalucia  # Asegúrate de que la importación es correcta
+
 
 @pytest.fixture(scope="session")
 def postgres_container():
@@ -9,6 +12,7 @@ def postgres_container():
     with PostgresContainer("postgres:15") as postgres:
         postgres.start()
         yield postgres
+
 
 @pytest.fixture(scope="session")
 def engine(postgres_container):
@@ -20,6 +24,7 @@ def engine(postgres_container):
     SQLModel.metadata.create_all(engine)
 
     return engine
+
 
 @pytest.fixture(scope="function")
 def db_session(engine):
