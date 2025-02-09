@@ -1,0 +1,10 @@
+requests==2.32.3
+beautifulsoup4==4.12.3
+loguru==0.7.3
+pydantic==2.10.6
+pydantic_settings==2.7.1
+sqlmodel==0.0.22
+apscheduler==3.11.0
+psycopg2-binary==2.9.10
+fastapi==0.115.8
+uvicorn==0.34.0
