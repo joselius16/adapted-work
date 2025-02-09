@@ -1,0 +1,2 @@
+bandit==1.8.2
+pre_commit==4.1.0
