@@ -3,7 +3,7 @@ from loguru import logger
 from sqlmodel import Session, select
 
 from adapted_work.database.connection import get_session
-from adapted_work.database.tables import Andalucia
+from adapted_work.database.tables import Comunity
 
 router = APIRouter()
 
@@ -19,4 +19,4 @@ def get_all_andalucia(session: Session = Depends(get_session)):
         _type_: _description_
     """
     logger.info("Getting andalucia info")
-    return session.exec(select(Andalucia)).all()
+    return session.exec(select(Comunity)).all()

@@ -9,7 +9,7 @@ from sqlmodel import Session, select
 from tqdm import tqdm
 
 from adapted_work.database.connection import engine
-from adapted_work.database.tables import Andalucia
+from adapted_work.database.tables import Comunity
 from adapted_work.settings import settings
 
 base_url = "https://www.juntadeandalucia.es/organismos/iaap/areas/empleo-publico/procesos-selectivos/detalle/"
@@ -48,14 +48,14 @@ def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
     return valid_urls
 
 
-def get_page_info(urls: List[str]) -> List[Andalucia]:
+def get_page_info(urls: List[str]) -> List[Comunity]:
     """Get page information and return it into andalucia schema table.
 
     Args:
         urls (List[str]): List of urls availables
 
     Returns:
-        List[Andalucia]: list with vacancies
+        List[Comunity]: list with vacancies
     """
     data_andalucia = []
 
@@ -88,7 +88,7 @@ def get_page_info(urls: List[str]) -> List[Andalucia]:
                 if disability_text:
                     disability_number = int(disability_text)
                     data_andalucia.append(
-                        Andalucia(url=url, disability_vacancies=disability_number)
+                        Comunity(url=url, disability_vacancies=disability_number)
                     )
                     logger.info(f"Disability number: {disability_number}")
                 else:
@@ -122,7 +122,7 @@ def save_andalucia(base_url: str, start_id: int, end_id: int) -> List[str]:
         logger.info("Saving into database.")
         with Session(engine) as session:
             for data in data_andalucia:
-                statement = select(Andalucia).where(Andalucia.url == data.url)
+                statement = select(Comunity).where(Comunity.url == data.url)
                 result = session.exec(statement).first()
 
                 if result:
