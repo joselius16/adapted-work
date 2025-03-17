@@ -3,7 +3,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from testcontainers.postgres import PostgresContainer
 
 from adapted_work.database.tables import \
-    Andalucia  # Asegúrate de que la importación es correcta
+    Comunity
 
 
 @pytest.fixture(scope="session")
