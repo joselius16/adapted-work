@@ -5,8 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from adapted_work.api import api_router
-from adapted_work.database.connection import (create_schema_if_not_exists,
-                                              initialize_data)
+from adapted_work.database.connection import initialize_data
 
 
 @asynccontextmanager
