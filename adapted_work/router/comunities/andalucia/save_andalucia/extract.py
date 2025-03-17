@@ -10,11 +10,11 @@ from tqdm import tqdm
 
 from adapted_work.database.connection import engine
 from adapted_work.database.tables import Comunity
-from adapted_work.settings import settings
+from adapted_work.settings import comunities_codes, settings
 
-base_url = "https://www.juntadeandalucia.es/organismos/iaap/areas/empleo-publico/procesos-selectivos/detalle/"
-start_id = 514556
-end_id = 514560
+# base_url = "https://www.juntadeandalucia.es/organismos/iaap/areas/empleo-publico/procesos-selectivos/detalle/"
+# start_id = 514556
+# end_id = 514560
 
 
 def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
@@ -67,28 +67,57 @@ def get_page_info(urls: List[str]) -> List[Comunity]:
             soup = BeautifulSoup(response.text, "html.parser")
 
             # TODO: segun la estructura de andalucia hay que hacer esto
-            element = soup.find(
-                class_="block block-layout-builder block-field-blocknodeprocesos-selectivosnumb-plazas-totales-division"
-            )
+            # element = soup.find(
+            #     class_="block block-layout-builder block-field-blocknodeprocesos-selectivosnumb-plazas-totales-division"
+            # )
+            element = soup.find(class_="encab-secc col-12")
 
             if element:
-                field_items = element.find_all("div", class_="field__item")
-
+                # 1. Disability
                 disability_text = None
-                for item in field_items:
-                    # regex
-                    match = re.search(
-                        r"(\d+)\s?\(Cupo de discapacidad general\)", item.text.strip()
-                    )
-                    if match:
-                        disability_text = match.group(1)
-                        break
+                match = re.search(
+                    r"(\d+)\s?\(Cupo de discapacidad general\)", element.text.strip()
+                )
+                if match:
+                    disability_text = match.group(1)
+                    # break
 
                 # if disability exists
                 if disability_text:
+                    # Find more data
+                    element_str = element.prettify()
+                    # 2. Specialty
+                    # specialty_match =
+                    pattern = r'<div class="views-label views-label-field-taxo-personal-3 field__label">\s*Especialidad\s*</div>\s*<div class="field-content field__item">\s*(.*?)\s*</div>'
+                    specialty_match = re.search(pattern, element_str, re.DOTALL)
+                    specialty = specialty_match.group(1).strip()
+
+                    # 3. Qualification
+                    pattern = r'<div class="views-label views-label-field-taxo-personal-2 field__label">\s*Cuerpo/Grupo\s*</div>\s*<div class="field-content field__item">\s*(.*?)\s*</div>'
+                    qualification_match = re.search(pattern, element_str, re.DOTALL)
+                    qualification = qualification_match.group(1).strip()
+
+                    # 4. Type personal
+                    pattern = r'<div class="views-label views-label-field-taxo-personal-1 field__label">\s*Tipo de personal\s*</div>\s*<div class="field-content field__item">\s*(.*?)\s*</div>'
+                    type_personnel_match = re.search(pattern, element_str, re.DOTALL)
+                    type_personnel = type_personnel_match.group(1).strip()
+
+                    # 5. Date
+                    pattern = r'<div class="views-label views-label-field-taxo-estado-1 field__label">\s*Estado\s*</div>\s*<div class="field-content field__item">\s*(.*?)\s*</div>'
+                    state_match = re.search(pattern, element_str, re.DOTALL)
+                    state = state_match.group(1).strip()
+
                     disability_number = int(disability_text)
                     data_andalucia.append(
-                        Comunity(url=url, disability_vacancies=disability_number)
+                        Comunity(
+                            id_comunity_type=comunities_codes.andalucia,
+                            ext_url=url,
+                            disability_vacancies=disability_number,
+                            specialty=specialty,
+                            qualifycation=qualification,
+                            type_of_personnel=type_personnel,
+                            dates=state,
+                        )
                     )
                     logger.info(f"Disability number: {disability_number}")
                 else:
@@ -122,20 +151,21 @@ def save_andalucia(base_url: str, start_id: int, end_id: int) -> List[str]:
         logger.info("Saving into database.")
         with Session(engine) as session:
             for data in data_andalucia:
-                statement = select(Comunity).where(Comunity.url == data.url)
+                statement = select(Comunity).where(Comunity.ext_url == data.ext_url)
                 result = session.exec(statement).first()
 
                 if result:
-                    logger.info(f"Url {data.url} already in database.")
+                    logger.info(f"Url {data.ext_url} already in database.")
                     continue
 
                 session.add(data)
-                logger.info(f"saving: {data.url}")
+                logger.info(f"saving: {data.ext_url}")
+
             session.commit()
 
         logger.info("Executed succesfully.")
 
-    except:
+    except Exception as e:
         logger.error("Cannot save into database.")
 
 
