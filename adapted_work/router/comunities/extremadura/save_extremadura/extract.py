@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from tqdm import tqdm
 
-from adapted_work.database.tables import Comunity
-from adapted_work.settings import settings
+from adapted_work.database.tables import Comunity, Jobs
+from adapted_work.settings import settings, database_settings
 from adapted_work.utils.process_data import save_into_database
 
 # Url de busqueda: http://juntaex.es/temas/trabajo-y-empleo/empleo-publico/buscador-de-empleo-publico?p_p_id=es_juntaex_paoc_presentacion_empleo_buscador_JuntaexEmpleoBuscadorPortlet&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_es_juntaex_paoc_presentacion_empleo_buscador_JuntaexEmpleoBuscadorPortlet_javax.portlet.action=%2Fcommand%2Faction%2FBuscadorEmpleoActionURL&p_auth=9XrfG3Jy
@@ -65,25 +65,64 @@ def get_page_info(urls: List[str]) -> List[Comunity]:
 
             if response.status_code == 200:
                 soup = BeautifulSoup(response.text, "html.parser")
-                elements = soup.find("body")
+                text_items = soup.get_text()
+            
 
-                if elements:
-                    # first_element = elements[0]  # Usar el primer div encontrado
-                    field_items = elements.find_all("li")
-
+                if text_items:
                     disability_number = 0  # Valor por defecto
-                    for item in field_items:
-                        match = re.search(
-                            r"Plazas turno discapacidad:\s*(\d+)", item.text.strip()
-                        )
-                        if match:
-                            disability_number = int(match.group(1))
-                            break
-
-                    data_extremadura.append(
-                        Comunity(url=url, disability_vacancies=disability_number)
+                    match = re.search(
+                        r"Plazas turno discapacidad:\s*(\d+)", text_items
                     )
-                    logger.info(f"Disability number: {disability_number}")
+                    if match:
+                        disability_number = int(match.group(1))
+
+                        logger.info(f"Disability number: {disability_number}")
+
+                        # Initializing variables
+                        title = None
+                        type_personnel = None
+                        dates = None
+                        qualification = None
+                        specialty = None
+
+                        # Title
+                        match = soup.find(class_="text-success")
+                        if match:
+                            title = match.get_text(strip=True)
+                        
+                        # Type of personnel
+                        match = re.search(r"Cuerpo\s*/\s*Grupo:\s*(.+?)(?:\n|$)", text_items)
+                        if match:
+                            type_personnel = match.group(1).strip()
+
+                        # 5. Qualification
+                        match = re.search(r"Titulación requerida:\s*(.*?)\n", text_items)
+                        if match:
+                            qualification = match.group(1).strip()
+
+                        # Dates
+                        match = re.search(r"Fecha de finalización del plazo de solicitudes:\s*(.*?)\n", text_items)
+                        if match:
+                            dates = match.group(1).strip()
+
+                        # Specialty
+                        match = re.search(r"Especialidad / Categoría:\s*(.*?)\n", text_items)
+                        if match:
+                            specialty = match.group(1).strip()
+
+                        data_extremadura.append(
+                            Jobs(id_comunity=database_settings.comunity_id.extremadura,
+                                 ext_url=url,
+                                 disability_vacancies=disability_number,
+                                 dates=dates,
+                                 title=title,
+                                 specialty=specialty,
+                                 type_personnel=type_personnel,
+                                 qualification=qualification
+                                 )
+                        )
+
+                    
                 else:
                     logger.info("Couldn't get disability vacancies")
             else:
@@ -120,6 +159,6 @@ def save_extremadura(base_url: str, start_id: int, end_id: int) -> List[str]:
 if __name__ == "__main__":
     save_extremadura(
         "https://www.juntaex.es/temas/trabajo-y-empleo/empleo-publico/buscador-de-empleo-publico/-/convocatoria/",
-        1638,
-        1639,
+        1625,
+        1626,
     )
