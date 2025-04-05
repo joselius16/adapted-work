@@ -28,5 +28,11 @@ class DatabaseSettings():
     class schema():
         schema_database = "empleo"
 
+    class comunity_id():
+        andalucia = 1
+        aragon = 2
+        extremadura = 3
+        murcia = 4
+
 settings = Settings()
 database_settings = DatabaseSettings()

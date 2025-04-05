@@ -19,7 +19,8 @@ class Jobs(SQLModel, table=True):
     id_comunity: int = Field(foreign_key=f"{database_settings.schema.schema_database}.{database_settings.TableName.comunity}.id")
     ext_url: str
     disability_vacancies: Optional[str] = Field(default=None)
-    end_date: Optional[str] = Field(default=None)
+    dates: Optional[str] = Field(default=None)
+    title: Optional[str] = Field(default=None)
     specialty: Optional[str] = Field(default=None)
     type_personnel: Optional[str] = Field(default=None)
     qualification : Optional[str] = Field(default=None)
