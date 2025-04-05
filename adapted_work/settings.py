@@ -20,4 +20,13 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 
+class DatabaseSettings():
+    class TableName():
+        comunity = "comunity"
+        jobs = "jobs"
+
+    class schema():
+        schema_database = "empleo"
+
 settings = Settings()
+database_settings = DatabaseSettings()
