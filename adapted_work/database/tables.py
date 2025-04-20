@@ -24,4 +24,5 @@ class Jobs(SQLModel, table=True):
     specialty: Optional[str] = Field(default=None)
     type_personnel: Optional[str] = Field(default=None)
     qualification : Optional[str] = Field(default=None)
+    pred_disability : Optional[str] = Field(default=None)
     
