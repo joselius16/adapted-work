@@ -13,11 +13,26 @@ class Settings(BaseSettings):
         "https://www.juntadeandalucia.es/organismos/iaap/areas/empleo-publico/procesos-selectivos/detalle/",
         env="BASE_URL_ANDALUCIA",
     )
-    start_id_andalucia: int = Field(514000, env="START_ID_ANDALUCIA")
-    end_id_andalucia: int = Field(514050, env="END_ID_ANDALUCIA")
+    start_id_andalucia: int = Field(514009, env="START_ID_ANDALUCIA")
+    end_id_andalucia: int = Field(514016, env="END_ID_ANDALUCIA")
 
     class Config:
         env_file = ".env"
 
 
+class DatabaseSettings():
+    class TableName():
+        comunity = "comunity"
+        jobs = "jobs"
+
+    class schema():
+        schema_database = "empleo"
+
+    class comunity_id():
+        andalucia = 1
+        aragon = 2
+        extremadura = 3
+        murcia = 4
+
 settings = Settings()
+database_settings = DatabaseSettings()

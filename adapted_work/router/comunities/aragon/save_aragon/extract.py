@@ -1,5 +1,6 @@
 import re
 import time
+from datetime import datetime
 from typing import List
 
 import requests
@@ -7,8 +8,8 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from tqdm import tqdm
 
-from adapted_work.database.tables import Comunity
-from adapted_work.settings import settings
+from adapted_work.database.tables import Jobs
+from adapted_work.settings import database_settings
 from adapted_work.utils.process_data import save_into_database
 
 
@@ -43,14 +44,14 @@ def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
     return valid_urls
 
 
-def get_page_info(urls: List[str]) -> List[Comunity]:
+def get_page_info(urls: List[str]) -> List[Jobs]:
     """Get page information and return it into andalucia schema table.
 
     Args:
         urls (List[str]): List of urls availables
 
     Returns:
-        List[Andalucia]: list with vacancies
+        List[Jobs]: list with vacancies
     """
     data_aragon = []
 
@@ -60,20 +61,71 @@ def get_page_info(urls: List[str]) -> List[Comunity]:
 
             if response.status_code == 200:
                 soup = BeautifulSoup(response.text, "html.parser")
-                # Find the cell with the discapacity
-                th = soup.find("th", string="Personas con discapacidad")
-                if th:
-                    td = th.find_next("td")
+                text_items = soup.get_text()
+                if text_items:
                     disability_number = 0
-                    disability_number = (
-                        int(td.get_text(strip=True))
-                        if td
-                        else logger.info("Couldn't get disability vacancies")
-                    )
+                    match = re.search(r"Personas con discapacidad\s*(\d+)", text_items)
+                    if match:
+                        disability_number = int(match.group(1))
 
-                    if disability_number > 0:
+                        logger.info(f"Disability number: {disability_number}")
+
+                        # Initializing variables
+                        title = None
+                        type_personnel = None
+                        dates = None
+                        qualification = None
+                        specialty = None
+
+                        # Title
+                        match = re.search(r"Denominación:\s*(.+?)(?:\n|$)", text_items)
+                        if match:
+                            title = match.group(1).strip()
+
+                        # Type of personnel
+                        match = re.search(
+                            r"Tipo de plaza y grupo:\s*(.+?)(?:\n|$)", text_items
+                        )
+                        if match:
+                            type_personnel = match.group(1).strip()
+
+                        # 5. Qualification
+                        match = re.search(r"Titulación exigida:\s*(.*?)\n", text_items)
+                        if match:
+                            qualification = match.group(1).strip()
+
+                        # Dates
+                        match = re.search(
+                            r"Periodo de presentación:\s*((?:.|\n)+?)(?:\n\w|\Z)",
+                            text_items,
+                        )
+                        if match:
+                            dates = match.group(1).strip()
+                            dates = " ".join(dates.split())
+
+                        # Specialty # TODO: Hay que ver que es mejor si clasificar por categoria o especialidad
+                        match = re.search(r"Especialidad/Rama:\s*(.*?)\n", text_items)
+                        if match:
+                            specialty = match.group(1).strip()
+
+                            # Datetime now
+                            date_now = datetime.now()
+                            date_now = datetime(
+                                date_now.year, date_now.month, date_now.day
+                            )
+
                         data_aragon.append(
-                            Comunity(url=url, disability_vacancies=disability_number)
+                            Jobs(
+                                id_comunity=database_settings.comunity_id.aragon,
+                                ext_url=url,
+                                disability_vacancies=disability_number,
+                                dates=dates,
+                                saved_date=date_now,
+                                title=title,
+                                specialty=specialty,
+                                type_personnel=type_personnel,
+                                qualification=qualification,
+                            )
                         )
                         logger.info(f"Disability number: {disability_number}")
                 else:

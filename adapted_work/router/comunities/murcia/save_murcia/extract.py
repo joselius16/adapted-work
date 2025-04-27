@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from typing import List
 
 import requests
@@ -7,8 +8,8 @@ from loguru import logger
 from sqlmodel import Session, select
 
 from adapted_work.database.connection import engine
-from adapted_work.database.tables import Comunity
-from adapted_work.settings import settings
+from adapted_work.database.tables import Comunity, Jobs
+from adapted_work.settings import database_settings, settings
 from adapted_work.utils.process_data import save_into_database
 
 url_api = "https://empleopublico.carm.es/web/pagina?IDCONTENIDO=62006&IDTIPO=100&RASTRO=c%24m61986%2C61991&BUSCAR_POR=CUERPO_OFERTA&CUERPOS_OFERTABLES=0&ESTADOS_OPOSICIONES=0&Buscar=Buscar"
@@ -29,7 +30,7 @@ def get_endpoints(base_url: str) -> List[str]:
 
     headers = {"User-Agent": "Mozilla/5.0", "X-Requested-With": "XMLHttpRequest"}
 
-    response = requests.get(base_url, headers=headers)
+    response = requests.get(base_url, headers=headers, timeout=30)
 
     if response.status_code != 200:
         logger.error("Error in status:", response.status_code)
@@ -73,10 +74,78 @@ def get_page_info(urls: List[str]) -> List[Comunity]:
                 if match:
                     disability_number = int(match.group(1))
                     if disability_number > 0:
-                        data_murcia.append(
-                            Comunity(url=url, disability_vacancies=disability_number)
-                        )
                         logger.info(f"Disability number: {disability_number}")
+
+                        # Initializing variables
+                        title = None
+                        type_personnel = None
+                        dates = None
+                        qualification = None
+                        specialty = None
+
+                        # Title
+                        match = re.search(
+                            r"PROCESO SELECTIVO:\s*</th>\s*<td>\s*(.*?)\s*</td>",
+                            response.text,
+                            re.S,
+                        )
+                        if match:
+                            title = match.group(1).strip()
+
+                        # Type of personnel
+                        match = re.search(
+                            r"OPCIÓN, CUERPO, SUBGRUPO:\s*</th>\s*<td>\s*(.*?)\s*</td>",
+                            response.text,
+                            re.S,
+                        )
+                        if match:
+                            type_personnel = match.group(1).strip()
+
+                        # 5. Qualification
+                        match = re.search(
+                            r"TITULACIÓN REQUERIDA:\s*</th>\s*<td>\s*(.*?)\s*</td>",
+                            response.text,
+                            re.S,
+                        )
+                        if match:
+                            qualification = match.group(1).strip()
+
+                        # Dates
+                        match = re.search(
+                            r"PLAZO DE SOLICITUD ABIERTO:\s*</th>\s*<td>\s*(.*?)\s*</td>",
+                            response.text,
+                            re.S,
+                        )
+                        if match:
+                            dates = match.group(1).strip()
+
+                        # Specialty
+                        match = re.search(
+                            r"OPCIÓN, CUERPO, SUBGRUPO:\s*</th>\s*<td>\s*(.*?)\s*</td>",
+                            response.text,
+                            re.S,
+                        )
+                        if match:
+                            specialty = match.group(1).strip()
+
+                        # Datetime now
+                        date_now = datetime.now()
+                        date_now = datetime(date_now.year, date_now.month, date_now.day)
+
+                        data_murcia.append(
+                            Jobs(
+                                id_comunity=database_settings.comunity_id.murcia,
+                                ext_url=url,
+                                disability_vacancies=disability_number,
+                                dates=dates,
+                                saved_date=date_now,
+                                title=title,
+                                specialty=specialty,
+                                type_personnel=type_personnel,
+                                qualification=qualification,
+                            )
+                        )
+
                 else:
                     logger.info("Couldn't get disability vacancies")
             else:
