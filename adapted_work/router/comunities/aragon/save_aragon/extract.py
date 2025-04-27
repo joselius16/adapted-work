@@ -1,5 +1,6 @@
 import re
 import time
+from datetime import datetime
 from typing import List
 
 import requests
@@ -63,9 +64,7 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
                 text_items = soup.get_text()
                 if text_items:
                     disability_number = 0
-                    match = re.search(
-                        r"Personas con discapacidad\s*(\d+)", text_items
-                    )
+                    match = re.search(r"Personas con discapacidad\s*(\d+)", text_items)
                     if match:
                         disability_number = int(match.group(1))
 
@@ -82,19 +81,24 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
                         match = re.search(r"Denominación:\s*(.+?)(?:\n|$)", text_items)
                         if match:
                             title = match.group(1).strip()
-                        
+
                         # Type of personnel
-                        match = re.search(r"Tipo de plaza y grupo:\s*(.+?)(?:\n|$)", text_items)
+                        match = re.search(
+                            r"Tipo de plaza y grupo:\s*(.+?)(?:\n|$)", text_items
+                        )
                         if match:
                             type_personnel = match.group(1).strip()
 
-                        # 5. Qualification 
+                        # 5. Qualification
                         match = re.search(r"Titulación exigida:\s*(.*?)\n", text_items)
                         if match:
                             qualification = match.group(1).strip()
 
                         # Dates
-                        match = re.search(r"Periodo de presentación:\s*((?:.|\n)+?)(?:\n\w|\Z)", text_items)
+                        match = re.search(
+                            r"Periodo de presentación:\s*((?:.|\n)+?)(?:\n\w|\Z)",
+                            text_items,
+                        )
                         if match:
                             dates = match.group(1).strip()
                             dates = " ".join(dates.split())
@@ -104,16 +108,24 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
                         if match:
                             specialty = match.group(1).strip()
 
+                            # Datetime now
+                            date_now = datetime.now()
+                            date_now = datetime(
+                                date_now.year, date_now.month, date_now.day
+                            )
+
                         data_aragon.append(
-                            Jobs(id_comunity=database_settings.comunity_id.aragon,
-                                 ext_url=url,
-                                 disability_vacancies=disability_number,
-                                 dates=dates,
-                                 title=title,
-                                 specialty=specialty,
-                                 type_personnel=type_personnel,
-                                 qualification=qualification
-                                 )
+                            Jobs(
+                                id_comunity=database_settings.comunity_id.aragon,
+                                ext_url=url,
+                                disability_vacancies=disability_number,
+                                dates=dates,
+                                saved_date=date_now,
+                                title=title,
+                                specialty=specialty,
+                                type_personnel=type_personnel,
+                                qualification=qualification,
+                            )
                         )
                         logger.info(f"Disability number: {disability_number}")
                 else:

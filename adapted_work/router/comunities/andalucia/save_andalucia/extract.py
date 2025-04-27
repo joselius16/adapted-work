@@ -1,5 +1,6 @@
 import re
 import time
+from datetime import datetime
 from typing import List
 
 import requests
@@ -10,7 +11,7 @@ from tqdm import tqdm
 
 from adapted_work.database.connection import engine
 from adapted_work.database.tables import Comunity, Jobs
-from adapted_work.settings import settings, database_settings
+from adapted_work.settings import database_settings, settings
 from adapted_work.utils.process_data import save_into_database
 
 base_url = "https://www.juntadeandalucia.es/organismos/iaap/areas/empleo-publico/procesos-selectivos/detalle/"
@@ -85,7 +86,6 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
                     if match:
                         disability_number = int(match.group(1))
                         if disability_number > 0:
-
                             logger.info(f"Disability number: {disability_number}")
 
                             # Initializing variables
@@ -96,40 +96,64 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
                             specialty = None
 
                             # Title
-                            match = re.search(r"^[ \n]*([A-Z]\d\.\d{4}.*?Junta de Andalucía)[ \n]*$", text_items, re.MULTILINE)
+                            match = re.search(
+                                r"^[ \n]*([A-Z]\d\.\d{4}.*?Junta de Andalucía)[ \n]*$",
+                                text_items,
+                                re.MULTILINE,
+                            )
                             if match:
                                 title = match.group(1).strip()
-                            
+
                             # Type of personnel
-                            match = re.search(r"Tipo de personal\s*(.+?)\s*Cuerpo/?Grupo", text_items)
+                            match = re.search(
+                                r"Tipo de personal\s*(.+?)\s*Cuerpo/?Grupo", text_items
+                            )
                             if match:
                                 type_personnel = match.group(1).strip()
 
                             # 5. Qualification
-                            match = re.search(r"Cuerpo/?Grupo\s*(.+?)\s*Especialidad", text_items)
+                            match = re.search(
+                                r"Cuerpo/?Grupo\s*(.+?)\s*Especialidad", text_items
+                            )
                             if match:
                                 qualification = match.group(1).strip()
 
                             # Dates
-                            match = re.search(r"Estado\s*(.*?)(?:\n\s*\n\s*\n|\n\s*[A-Z][a-z]+)", text_items, re.DOTALL)
+                            match = re.search(
+                                r"Estado\s*(.*?)(?:\n\s*\n\s*\n|\n\s*[A-Z][a-z]+)",
+                                text_items,
+                                re.DOTALL,
+                            )
                             if match:
                                 dates = match.group(1).strip()
 
                             # Specialty
-                            match = re.search(r"Especialidad\s*([A-Z]\d\.\d{4}.*?)\s*(Año de Oferta Pública|Estado)", text_items, re.DOTALL)
+                            match = re.search(
+                                r"Especialidad\s*([A-Z]\d\.\d{4}.*?)\s*(Año de Oferta Pública|Estado)",
+                                text_items,
+                                re.DOTALL,
+                            )
                             if match:
                                 specialty = match.group(1).strip()
 
+                            # Datetime now
+                            date_now = datetime.now()
+                            date_now = datetime(
+                                date_now.year, date_now.month, date_now.day
+                            )
+
                             data_andalucia.append(
-                                Jobs(id_comunity=database_settings.comunity_id.andalucia,
+                                Jobs(
+                                    id_comunity=database_settings.comunity_id.andalucia,
                                     ext_url=url,
                                     disability_vacancies=disability_number,
                                     dates=dates,
+                                    saved_date=date_now,
                                     title=title,
                                     specialty=specialty,
                                     type_personnel=type_personnel,
-                                    qualification=qualification
-                                    )
+                                    qualification=qualification,
+                                )
                             )
                 else:
                     logger.info("There aren't any disability vacancies.")
