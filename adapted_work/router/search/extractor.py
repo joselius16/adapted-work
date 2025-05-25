@@ -1,0 +1,58 @@
+from sqlmodel import func, select
+
+from adapted_work.database.tables import Comunity, Jobs
+from adapted_work.router.search.schema_model import JobItem
+
+
+def get_total_jobs(community, session):
+    """Get all jobs."""
+    query = select(func.count(Jobs.id)).join(Comunity, Comunity.id == Jobs.id_comunity)
+
+    if community:
+        query = query.where(Comunity.name == community)
+
+    count = session.exec(query).first()
+    return count
+
+
+def parse_job_item(result):
+    """Parse jobs."""
+    jobs = []
+    for res in result:
+        job = JobItem(
+            title=res.title,
+            specialty=res.specialty,
+            comunity=res.comunity,
+            disability_vacancies=res.disability_vacancies,
+            pred_disability=res.pred_disability,
+            link=res.link,
+        )
+        jobs.append(job)
+
+    return jobs
+
+
+def get_searched_data(size, offset, community, order_by, session):
+    """Get search jobs."""
+    query = (
+        select(
+            Jobs.title.label("title"),
+            Jobs.specialty.label("specialty"),
+            Jobs.disability_vacancies.label("disability_vacancies"),
+            Comunity.name.label("comunity"),
+            Jobs.ext_url.label("link"),
+            Jobs.pred_disability.label("pred_disability"),
+        )
+        .join(Comunity, Comunity.id == Jobs.id_comunity)
+        .order_by(order_by)
+        .limit(size)
+        .offset(offset)
+    )
+
+    if community:
+        query = query.where(Comunity.name == community)
+
+    result = session.exec(query).all()
+
+    jobs = parse_job_item(result)
+    return jobs
