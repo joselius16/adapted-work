@@ -11,6 +11,7 @@ class Comunity(SQLModel, table=True):
     __table_args__ = {"schema": database_settings.schema.schema_database}
     id: int = Field(default=None, primary_key=True)
     name: str = Field(default=None)
+    code: str = Field(default=None)
     url: str = Field(default=None)
 
 

@@ -44,10 +44,18 @@ def initialize_data():
             if not existing:
                 logger.info("Inserting data into comunity table")
                 comunities = [
-                    Comunity(name="Andalucia", url="https://www.juntadeandalucia.es"),
-                    Comunity(name="Aragon", url="https://www.aragon.es"),
-                    Comunity(name="Extremadura", url="https://www.juntaex.es"),
-                    Comunity(name="Murcia", url="https://empleopublico.carm.es"),
+                    Comunity(
+                        name="Andalucia",
+                        code="AN",
+                        url="https://www.juntadeandalucia.es",
+                    ),
+                    Comunity(name="Aragon", code="AR", url="https://www.aragon.es"),
+                    Comunity(
+                        name="Extremadura", code="EX", url="https://www.juntaex.es"
+                    ),
+                    Comunity(
+                        name="Murcia", code="MU", url="https://empleopublico.carm.es"
+                    ),
                 ]
                 session.add_all(comunities)
                 session.commit()
