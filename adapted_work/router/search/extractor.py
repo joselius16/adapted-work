@@ -26,6 +26,7 @@ def parse_job_item(result):
             disability_vacancies=res.disability_vacancies,
             pred_disability=res.pred_disability,
             link=res.link,
+            date=res.date,
         )
         jobs.append(job)
 
@@ -42,6 +43,7 @@ def get_searched_data(size, offset, community, order_by, session):
             Comunity.name.label("comunity"),
             Jobs.ext_url.label("link"),
             Jobs.pred_disability.label("pred_disability"),
+            Jobs.saved_date.label("date"),
         )
         .join(Comunity, Comunity.id == Jobs.id_comunity)
         .order_by(order_by)

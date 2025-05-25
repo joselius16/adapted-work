@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any, Dict, List
 
 from pydantic import BaseModel
@@ -12,6 +13,7 @@ class JobItem(BaseModel):
     comunity: str
     disability_vacancies: str
     pred_disability: str
+    date: date
 
 
 class PaginatedResponse(BaseModel):
