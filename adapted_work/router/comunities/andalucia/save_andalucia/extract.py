@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 from tqdm import tqdm
 
 from adapted_work.database.connection import engine
-from adapted_work.database.tables import Comunity, Jobs
+from adapted_work.database.tables import Community, Jobs
 from adapted_work.settings import database_settings, settings
 from adapted_work.utils.process_data import save_into_database
 
@@ -144,7 +144,7 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
 
                             data_andalucia.append(
                                 Jobs(
-                                    id_comunity=database_settings.comunity_id.andalucia,
+                                    id_community=database_settings.community_id.andalucia,
                                     ext_url=url,
                                     disability_vacancies=disability_number,
                                     dates=dates,

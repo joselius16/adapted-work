@@ -27,7 +27,7 @@ def get_all_andalucia(
         return session.exec(
             select(Jobs).where(
                 and_(
-                    Jobs.id_comunity == database_settings.comunity_id.andalucia,
+                    Jobs.id_community == database_settings.community_id.andalucia,
                     filter_by_date(filter),
                 )
             )

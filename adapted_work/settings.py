@@ -20,19 +20,20 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 
-class DatabaseSettings():
-    class TableName():
-        comunity = "comunity"
+class DatabaseSettings:
+    class TableName:
+        community = "community"
         jobs = "jobs"
 
-    class schema():
+    class schema:
         schema_database = "empleo"
 
-    class comunity_id():
+    class community_id:
         andalucia = 1
         aragon = 2
         extremadura = 3
         murcia = 4
+
 
 settings = Settings()
 database_settings = DatabaseSettings()

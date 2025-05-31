@@ -1,7 +1,7 @@
 from loguru import logger
 from sqlmodel import Session, SQLModel, create_engine, select, text
 
-from adapted_work.database.tables import Comunity
+from adapted_work.database.tables import Community
 from adapted_work.settings import settings
 
 engine = create_engine(settings.database_uri, echo=True)
@@ -35,25 +35,25 @@ def initialize_data():
         with Session(engine) as session:
             # Verify if data exists
             result = session.exec(
-                select(Comunity).where(
-                    Comunity.name.in_(["Andalucia", "Aragon", "Extremadura", "Murcia"])
+                select(Community).where(
+                    Community.name.in_(["Andalucia", "Aragon", "Extremadura", "Murcia"])
                 )
             )
             existing = result.all()
 
             if not existing:
-                logger.info("Inserting data into comunity table")
+                logger.info("Inserting data into community table")
                 comunities = [
-                    Comunity(
+                    Community(
                         name="Andalucia",
                         code="AN",
                         url="https://www.juntadeandalucia.es",
                     ),
-                    Comunity(name="Aragon", code="AR", url="https://www.aragon.es"),
-                    Comunity(
+                    Community(name="Aragon", code="AR", url="https://www.aragon.es"),
+                    Community(
                         name="Extremadura", code="EX", url="https://www.juntaex.es"
                     ),
-                    Comunity(
+                    Community(
                         name="Murcia", code="MU", url="https://empleopublico.carm.es"
                     ),
                 ]

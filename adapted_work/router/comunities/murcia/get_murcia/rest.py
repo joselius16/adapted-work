@@ -22,7 +22,9 @@ def get_all_murcia(session: Session = Depends(get_session)):
     try:
         logger.info("Getting murcia info")
         return session.exec(
-            select(Jobs).where(Jobs.id_comunity == database_settings.comunity_id.murcia)
+            select(Jobs).where(
+                Jobs.id_community == database_settings.community_id.murcia
+            )
         ).all()
     except Exception as e:
         logger.error(f"Error executing murcia endpoint: {e}")

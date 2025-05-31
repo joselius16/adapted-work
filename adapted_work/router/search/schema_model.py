@@ -10,7 +10,7 @@ class JobItem(BaseModel):
     title: str
     specialty: str
     link: str
-    comunity: str
+    community: str
     disability_vacancies: str
     pred_disability: str
     date: date

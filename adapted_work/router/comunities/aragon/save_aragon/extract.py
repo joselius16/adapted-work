@@ -116,7 +116,7 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
 
                         data_aragon.append(
                             Jobs(
-                                id_comunity=database_settings.comunity_id.aragon,
+                                id_community=database_settings.community_id.aragon,
                                 ext_url=url,
                                 disability_vacancies=disability_number,
                                 dates=dates,

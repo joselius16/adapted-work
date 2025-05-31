@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from tqdm import tqdm
 
-from adapted_work.database.tables import Comunity, Jobs
+from adapted_work.database.tables import Community, Jobs
 from adapted_work.settings import database_settings, settings
 from adapted_work.utils.process_data import save_into_database
 
@@ -49,14 +49,14 @@ def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
     return valid_urls
 
 
-def get_page_info(urls: List[str]) -> List[Comunity]:
-    """Get page information and return it into comunity schema table.
+def get_page_info(urls: List[str]) -> List[Community]:
+    """Get page information and return it into community schema table.
 
     Args:
         urls (List[str]): List of urls availables
 
     Returns:
-        List[Comunity]: list with vacancies
+        List[Community]: list with vacancies
     """
     data_extremadura = []
 
@@ -123,7 +123,7 @@ def get_page_info(urls: List[str]) -> List[Comunity]:
 
                         data_extremadura.append(
                             Jobs(
-                                id_comunity=database_settings.comunity_id.extremadura,
+                                id_community=database_settings.community_id.extremadura,
                                 ext_url=url,
                                 disability_vacancies=disability_number,
                                 dates=dates,
