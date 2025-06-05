@@ -13,11 +13,9 @@ from adapted_work.router.search.rest import router as search_jobs
 
 api_router = APIRouter()
 
-api_router.include_router(get_all_andalucia, tags=["Comunities"], prefix="/andalucia")
-api_router.include_router(
-    get_all_extremadura, tags=["Comunities"], prefix="/extremadura"
-)
-api_router.include_router(get_all_aragon, tags=["Comunities"], prefix="/aragon")
-api_router.include_router(get_all_murcia, tags=["Comunities"], prefix="/murcia")
-api_router.include_router(search_jobs, tags=["Search"], prefix="/search")
-api_router.include_router(get_comunities, tags=["Comunities"], prefix="/comunities")
+api_router.include_router(get_all_andalucia, tags=["Jobs"], prefix="/andalucia")
+api_router.include_router(get_all_extremadura, tags=["Jobs"], prefix="/extremadura")
+api_router.include_router(get_all_aragon, tags=["Jobs"], prefix="/aragon")
+api_router.include_router(get_all_murcia, tags=["Jobs"], prefix="/murcia")
+api_router.include_router(search_jobs, tags=["Jobs"], prefix="/search")
+api_router.include_router(get_comunities, tags=["Communities"], prefix="/communities")
