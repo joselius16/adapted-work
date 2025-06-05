@@ -14,5 +14,12 @@ services:
     volumes:
       - database_adapted:/var/lib/postgresql/data
 
+  adapted-work:
+    image: adapted-work:0.0.1
+    env_file:
+      - .env
+    ports:
+      - "8032:8000"
+
 volumes:
   database_adapted:
