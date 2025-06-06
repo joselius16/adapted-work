@@ -1,26 +1,37 @@
 FROM python:3.13-slim-bookworm
 
+# Create group and user
+RUN groupadd --gid 1000 adapted_work && \
+    useradd --uid 1000 --gid adapted_work --shell /bin/bash --create-home adapted_work
+
 # The installer requires curl (and certificates) to download the release archive
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
 
-# Download the latest installer
-ADD https://astral.sh/uv/install.sh /uv-installer.sh
+# Download the latest installer for ollama
 RUN curl -fsSL https://ollama.com/install.sh | bash
 
-# Run the installer then remove it
-RUN sh /uv-installer.sh && rm /uv-installer.sh
+# Switch user
+USER adapted_work
+WORKDIR /home/adapted_work
 
-COPY adapted_work /root/adapted_work
-COPY requirements /root/requirements
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-WORKDIR /root
+# Copy folders
+COPY --chown=adapted_work:adapted_work adapted_work ./adapted_work
+COPY --chown=adapted_work:adapted_work requirements ./requirements
+COPY --chown=adapted_work:adapted_work docker/entrypoint.sh ./entrypoint.sh
 
-# Ensure the installed binary is on the `PATH`
-ENV PATH="/root/.local/bin/:$PATH"
+RUN chmod +x /home/adapted_work/entrypoint.sh
+
+# Activate venv
+RUN /home/adapted_work/.local/bin/uv venv .venv
+ENV VIRTUAL_ENV="/home/adapted_work/.venv"
+ENV PATH="/home/adapted_work/.venv/bin:/home/adapted_work/.local/bin:$PATH"
 ENV OLLAMA_MODEL=gemma3:1b
 
-RUN uv pip install -r /root/requirements/requirements.txt --system
+# Install requirements
+RUN /home/adapted_work/.local/bin/uv pip install -r /home/adapted_work/requirements/requirements.txt
 
-# Configura el comando CMD usando la sintaxis de lista de JSON
-#CMD ["python", "-m", "uvicorn", "adapted_work.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-CMD ["entrypoint.sh"]
+# Execute entrypoint
+CMD ["/home/adapted_work/entrypoint.sh"]
