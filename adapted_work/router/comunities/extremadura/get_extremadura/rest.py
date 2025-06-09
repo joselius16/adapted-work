@@ -23,7 +23,7 @@ def get_all_extremadura(session: Session = Depends(get_session)):
         logger.info("Getting extremadura info")
         return session.exec(
             select(Jobs).where(
-                Jobs.id_comunity == database_settings.comunity_id.extremadura
+                Jobs.id_community == database_settings.community_id.extremadura
             )
         ).all()
     except Exception as e:

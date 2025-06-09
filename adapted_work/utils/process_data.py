@@ -1,11 +1,10 @@
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_ollama import ChatOllama
 from loguru import logger
 from sqlmodel import Session, select
 
 from adapted_work.database.connection import engine
 from adapted_work.database.tables import Jobs
-
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama import ChatOllama
 
 
 def load_llm():
@@ -47,9 +46,9 @@ def save_into_database(data_administration):
                 result = session.exec(statement).first()
 
                 if result:
-                    logger.info(f"Url {data.url} already in database.")
+                    logger.info(f"Url {data.ext_url} already in database.")
                     continue
-                
+
                 # Predict with llm
                 data.pred_disability = llm_prediction(chain, data)
                 # Adding into database

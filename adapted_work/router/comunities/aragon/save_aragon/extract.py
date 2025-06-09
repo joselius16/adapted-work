@@ -25,6 +25,7 @@ def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
         List[str]: list with endpoints with employment
     """
     valid_urls = []
+    id_urls = []
 
     for i in tqdm(range(start_id, end_id + 1)):
         url = f"{base_url}{i}"
@@ -33,6 +34,7 @@ def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
             response = requests.head(url, timeout=10)
             if response.status_code == 200:
                 valid_urls.append(url)
+                id_urls.append(i)
                 logger.info(f"Saved {url} in valid urls.")
         except requests.exceptions.Timeout:
             logger.debug(f"Timeout in {url}, skipping url.")
@@ -41,10 +43,10 @@ def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
 
         time.sleep(1)  # wait for next request
 
-    return valid_urls
+    return valid_urls, id_urls
 
 
-def get_page_info(urls: List[str]) -> List[Jobs]:
+def get_page_info(urls: List[str], id_urls: List[int], end_id: int) -> List[Jobs]:
     """Get page information and return it into andalucia schema table.
 
     Args:
@@ -54,12 +56,14 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
         List[Jobs]: list with vacancies
     """
     data_aragon = []
+    last_id = end_id
 
-    for url in urls:
+    for url, id in zip(urls, id_urls):
         try:
             response = requests.get(url, timeout=30)
 
             if response.status_code == 200:
+                last_id = id
                 soup = BeautifulSoup(response.text, "html.parser")
                 text_items = soup.get_text()
                 if text_items:
@@ -116,7 +120,7 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
 
                         data_aragon.append(
                             Jobs(
-                                id_comunity=database_settings.comunity_id.aragon,
+                                id_community=database_settings.community_id.aragon,
                                 ext_url=url,
                                 disability_vacancies=disability_number,
                                 dates=dates,
@@ -138,7 +142,7 @@ def get_page_info(urls: List[str]) -> List[Jobs]:
         except requests.RequestException as e:
             logger.error(f"Error fetching {url}: {e}")
 
-    return data_aragon
+    return data_aragon, last_id
 
 
 def save_aragon(base_url: str, start_id: int, end_id: int) -> List[str]:
@@ -153,12 +157,15 @@ def save_aragon(base_url: str, start_id: int, end_id: int) -> List[str]:
         List[str]: list with endpoints with employment
     """
     logger.info("Getting endpoints.")
-    urls = get_endpoints(base_url, start_id, end_id)
+    urls, id_urls = get_endpoints(base_url, start_id, end_id)
 
     logger.info("Getting page info.")
-    data_aragon = get_page_info(urls)
+    data_aragon, last_id = get_page_info(urls, id_urls, end_id)
 
-    save_into_database(data_aragon)
+    if data_aragon:
+        save_into_database(data_aragon)
+
+    return last_id
 
 
 if __name__ == "__main__":

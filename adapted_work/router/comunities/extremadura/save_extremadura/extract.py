@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from tqdm import tqdm
 
-from adapted_work.database.tables import Comunity, Jobs
+from adapted_work.database.tables import Community, Jobs
 from adapted_work.settings import database_settings, settings
 from adapted_work.utils.process_data import save_into_database
 
@@ -30,6 +30,7 @@ def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
         List[str]: list with endpoints with employment
     """
     valid_urls = []
+    id_urls = []
 
     for i in tqdm(range(start_id, end_id + 1)):
         url = f"{base_url}{i}"
@@ -38,6 +39,7 @@ def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
             response = requests.head(url, timeout=10)
             if response.status_code == 200:
                 valid_urls.append(url)
+                id_urls.append(i)
                 logger.info(f"Saved {url} in valid urls.")
         except requests.exceptions.Timeout:
             logger.debug(f"Timeout in {url}, skipping url.")
@@ -46,25 +48,27 @@ def get_endpoints(base_url: str, start_id: int, end_id: int) -> List[str]:
 
         time.sleep(1)  # wait for next request
 
-    return valid_urls
+    return valid_urls, id_urls
 
 
-def get_page_info(urls: List[str]) -> List[Comunity]:
-    """Get page information and return it into comunity schema table.
+def get_page_info(urls: List[str], id_urls: List[int], end_id: int) -> List[Community]:
+    """Get page information and return it into community schema table.
 
     Args:
         urls (List[str]): List of urls availables
 
     Returns:
-        List[Comunity]: list with vacancies
+        List[Community]: list with vacancies
     """
     data_extremadura = []
+    last_id = end_id
 
-    for url in urls:
+    for url, id in zip(urls, id_urls):
         try:
             response = requests.get(url, timeout=30)
 
             if response.status_code == 200:
+                last_id = id
                 soup = BeautifulSoup(response.text, "html.parser")
                 text_items = soup.get_text()
 
@@ -123,7 +127,7 @@ def get_page_info(urls: List[str]) -> List[Comunity]:
 
                         data_extremadura.append(
                             Jobs(
-                                id_comunity=database_settings.comunity_id.extremadura,
+                                id_community=database_settings.community_id.extremadura,
                                 ext_url=url,
                                 disability_vacancies=disability_number,
                                 dates=dates,
@@ -145,7 +149,7 @@ def get_page_info(urls: List[str]) -> List[Comunity]:
         except requests.RequestException as e:
             logger.error(f"Error fetching {url}: {e}")
 
-    return data_extremadura
+    return data_extremadura, last_id
 
 
 def save_extremadura(base_url: str, start_id: int, end_id: int) -> List[str]:
@@ -160,12 +164,15 @@ def save_extremadura(base_url: str, start_id: int, end_id: int) -> List[str]:
         List[str]: list with endpoints with employment
     """
     logger.info("Getting endpoints.")
-    urls = get_endpoints(base_url, start_id, end_id)
+    urls, id_urls = get_endpoints(base_url, start_id, end_id)
 
     logger.info("Getting page info.")
-    data_extremadura = get_page_info(urls)
+    data_extremadura, last_id = get_page_info(urls, id_urls, end_id)
 
-    save_into_database(data_extremadura)
+    if data_extremadura:
+        save_into_database(data_extremadura)
+
+    return last_id
 
 
 if __name__ == "__main__":

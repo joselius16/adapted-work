@@ -6,11 +6,12 @@ from sqlmodel import Field, SQLModel
 from adapted_work.settings import database_settings
 
 
-class Comunity(SQLModel, table=True):
-    __tablename__ = database_settings.TableName.comunity
+class Community(SQLModel, table=True):
+    __tablename__ = database_settings.TableName.community
     __table_args__ = {"schema": database_settings.schema.schema_database}
     id: int = Field(default=None, primary_key=True)
     name: str = Field(default=None)
+    code: str = Field(default=None)
     url: str = Field(default=None)
 
 
@@ -18,9 +19,9 @@ class Jobs(SQLModel, table=True):
     __tablename__ = database_settings.TableName.jobs
     __table_args__ = {"schema": database_settings.schema.schema_database}
     id: int = Field(default=None, primary_key=True)
-    id_comunity: int = Field(
-        foreign_key=f"{database_settings.schema.schema_database}.{database_settings.TableName.comunity}.id",
-        description="Comunity id",
+    id_community: int = Field(
+        foreign_key=f"{database_settings.schema.schema_database}.{database_settings.TableName.community}.id",
+        description="Community id",
     )
     ext_url: str = Field(description="Url from posted job")
     disability_vacancies: Optional[str] = Field(

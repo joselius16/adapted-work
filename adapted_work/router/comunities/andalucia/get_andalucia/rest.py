@@ -10,10 +10,8 @@ from adapted_work.utils.sort_filters import DateFilter, filter_by_date
 router = APIRouter()
 
 
-@router.post("/get_andalucia")
-def get_all_andalucia(
-    filter: DateFilter = None, session: Session = Depends(get_session)
-):
+@router.get("/get_andalucia")
+def get_all_andalucia(session: Session = Depends(get_session)):
     """Get data from andalucia.
 
     Args:
@@ -26,10 +24,7 @@ def get_all_andalucia(
         logger.info("Getting andalucia info")
         return session.exec(
             select(Jobs).where(
-                and_(
-                    Jobs.id_comunity == database_settings.comunity_id.andalucia,
-                    filter_by_date(filter),
-                )
+                Jobs.id_community == database_settings.community_id.andalucia
             )
         ).all()
     except Exception as e:
