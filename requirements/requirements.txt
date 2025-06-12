@@ -64,6 +64,8 @@ packaging==24.2
     # via
     #   langchain-core
     #   langsmith
+polars==1.30.0
+    # via -r requirements/requirements.in
 psycopg2-binary==2.9.10
     # via -r requirements/requirements.in
 pydantic==2.10.6
