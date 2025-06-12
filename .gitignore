@@ -176,3 +176,5 @@ cython_debug/
 logs/
 .vercel
 .env*.local
+
+data/*
