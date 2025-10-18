@@ -77,7 +77,7 @@ def execute_scheduler():
     last_ids = save_data(web_pages_range)
 
     # Update ranges
-    update_ranges(web_pages_range, last_ids)
+    #update_ranges(web_pages_range, last_ids)
 
 
 

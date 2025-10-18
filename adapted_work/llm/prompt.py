@@ -12,7 +12,7 @@ llm = ChatOllama(
     num_predict=256
 )
 
-chain = prompt_template_1 | llm
+chain = prompt_template_3 | llm
 
 response = chain.invoke({
     "job": "AGX00C22-Convocatoria al Cuerpo Superior de Administradores",

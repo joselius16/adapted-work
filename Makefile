@@ -18,4 +18,4 @@ docker-build:
 
 docker-security: docker-build
 	@echo "Escaneando imagen con Trivy..."
-	trivy image $(IMAGE_NAME):$(VERSION)
+	trivy image $(IMAGE_NAME):$(IMAGE_VERSION)

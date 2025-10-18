@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Initiate Ollama
-ollama serve
+ollama serve &
 
 # Download Ollama Model
 OLLAMA_MODEL=${OLLAMA_MODEL}
